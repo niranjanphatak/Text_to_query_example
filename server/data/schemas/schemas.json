@@ -1,0 +1,314 @@
+{
+    "description": "Multi-collection notification system with primary events and channel-specific collections",
+    "collections": {
+        "notification_events": {
+            "description": "Primary collection tracking all notification events",
+            "fields": {
+                "event_tracking_id": {
+                    "type": "string",
+                    "description": "Unique tracking ID linking all collections",
+                    "example": "EVT-20241128-001234",
+                    "indexed": true
+                },
+                "event_name": {
+                    "type": "string",
+                    "description": "Event name for categorization and analytics",
+                    "example": "ORDER_PLACED, PAYMENT_RECEIVED, ACCOUNT_CREATED, ORDER_SHIPPED, PASSWORD_RESET, SUBSCRIPTION_RENEWED",
+                    "indexed": true
+                },
+                "customer_id": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "customer_name": {
+                    "type": "string"
+                },
+                "customer_email": {
+                    "type": "string"
+                },
+                "customer_phone": {
+                    "type": "string"
+                },
+                "notification_type": {
+                    "type": "string",
+                    "enum": [
+                        "promotional",
+                        "transactional",
+                        "alert",
+                        "reminder",
+                        "system"
+                    ]
+                },
+                "priority": {
+                    "type": "integer",
+                    "description": "1=critical, 2=high, 3=medium, 4=low, 5=lowest"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "channels": {
+                    "type": "array",
+                    "description": "Channels to send through",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "email",
+                            "sms",
+                            "push",
+                            "in_app"
+                        ]
+                    }
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "accepted",
+                        "processed"
+                    ],
+                    "description": "Event processing status"
+                },
+                "created_at": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "processed_at": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object"
+                }
+            }
+        },
+        "email_notifications": {
+            "description": "Email channel notifications",
+            "fields": {
+                "event_tracking_id": {
+                    "type": "string",
+                    "description": "Links to notification_events",
+                    "indexed": true
+                },
+                "recipient_email": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "recipient_name": {
+                    "type": "string"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "message_body": {
+                    "type": "string"
+                },
+                "html_body": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "processing",
+                        "sent",
+                        "delivered",
+                        "failed",
+                        "blacklisted",
+                        "bounced",
+                        "unsubscribed",
+                        "read"
+                    ],
+                    "indexed": true
+                },
+                "sent_at": {
+                    "type": "string"
+                },
+                "delivered_at": {
+                    "type": "string"
+                },
+                "opened_at": {
+                    "type": "string"
+                },
+                "clicked_at": {
+                    "type": "string"
+                },
+                "email_provider": {
+                    "type": "string"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "retry_count": {
+                    "type": "integer"
+                },
+                "error_details": {
+                    "type": "string"
+                }
+            }
+        },
+        "sms_notifications": {
+            "description": "SMS channel notifications",
+            "fields": {
+                "event_tracking_id": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "recipient_phone": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "recipient_name": {
+                    "type": "string"
+                },
+                "message_body": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "processing",
+                        "sent",
+                        "delivered",
+                        "failed",
+                        "blacklisted"
+                    ],
+                    "indexed": true
+                },
+                "sent_at": {
+                    "type": "string"
+                },
+                "delivered_at": {
+                    "type": "string"
+                },
+                "sms_provider": {
+                    "type": "string"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "retry_count": {
+                    "type": "integer"
+                },
+                "error_details": {
+                    "type": "string"
+                }
+            }
+        },
+        "push_notifications": {
+            "description": "Push notification channel",
+            "fields": {
+                "event_tracking_id": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "recipient_id": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "device_tokens": {
+                    "type": "array"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "message_body": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "processing",
+                        "sent",
+                        "delivered",
+                        "failed",
+                        "blacklisted",
+                        "read"
+                    ],
+                    "indexed": true
+                },
+                "sent_at": {
+                    "type": "string"
+                },
+                "delivered_at": {
+                    "type": "string"
+                },
+                "received_at": {
+                    "type": "string"
+                },
+                "clicked_at": {
+                    "type": "string"
+                },
+                "push_provider": {
+                    "type": "string"
+                },
+                "notification_id": {
+                    "type": "string"
+                },
+                "retry_count": {
+                    "type": "integer"
+                },
+                "error_details": {
+                    "type": "string"
+                }
+            }
+        },
+        "inapp_notifications": {
+            "description": "In-app notification channel",
+            "fields": {
+                "event_tracking_id": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "recipient_id": {
+                    "type": "string",
+                    "indexed": true
+                },
+                "recipient_name": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "message_body": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "sent",
+                        "delivered",
+                        "read",
+                        "failed"
+                    ],
+                    "indexed": true
+                },
+                "sent_at": {
+                    "type": "string"
+                },
+                "delivered_at": {
+                    "type": "string"
+                },
+                "read_at": {
+                    "type": "string"
+                },
+                "retry_count": {
+                    "type": "integer"
+                },
+                "error_details": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "relationships": {
+        "description": "Collections are linked via event_tracking_id",
+        "example_queries": [
+            "Get all channels for event: db.email_notifications.find({event_tracking_id: 'EVT-001'})",
+            "Get event status: db.notification_events.findOne({event_tracking_id: 'EVT-001'})"
+        ]
+    }
+}

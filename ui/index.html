@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Query Assistant - Notification System</title>
+    <meta name="description" content="AI-powered natural language to MongoDB query converter for notification system">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M20 7h-9M14 17H5M21 12H8M3 12h1m0 0h1" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <h1>Query Assistant</h1>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="status-section">
+                    <h3>System Status</h3>
+                    <div class="status-item">
+                        <span class="status-label">Server</span>
+                        <span class="status-indicator" id="server-status">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Checking...</span>
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">MongoDB</span>
+                        <span class="status-indicator" id="mongo-status">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Checking...</span>
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Schemas</span>
+                        <span class="status-indicator" id="schemas-status">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Loading...</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="collections-section">
+                    <h3>Available Collections</h3>
+                    <div id="collections-list" class="collections-list">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+
+                <div class="examples-section">
+                    <h3>Example Queries</h3>
+                    <div class="example-queries">
+                        <button class="example-btn" data-query="Show me all failed email notifications">
+                            Failed email notifications
+                        </button>
+                        <button class="example-btn" data-query="Count notifications by event type">
+                            Count by event type
+                        </button>
+                        <button class="example-btn"
+                            data-query="Show me all transactional notifications from the last 7 days">
+                            Recent transactional notifications
+                        </button>
+                        <button class="example-btn" data-query="Find all read push notifications">
+                            Read push notifications
+                        </button>
+                        <button class="example-btn" data-query="Show me notifications with critical priority">
+                            Critical priority notifications
+                        </button>
+                        <button class="example-btn" data-query="Count how many SMS notifications were delivered">
+                            Delivered SMS count
+                        </button>
+                        <button class="example-btn" data-query="Show email notifications grouped by status">
+                            Email status breakdown
+                        </button>
+                        <button class="example-btn" data-query="Find all notifications for customer John Smith">
+                            Notifications for specific customer
+                        </button>
+                        <button class="example-btn"
+                            data-query="Group notification events by notification type and count them">
+                            Count by notification type
+                        </button>
+                        <button class="example-btn"
+                            data-query="Show me the average retry count for failed email notifications">
+                            Average retry count for failures
+                        </button>
+                        <button class="example-btn"
+                            data-query="Count how many notifications were sent through each channel">
+                            Notifications per channel
+                        </button>
+                        <button class="example-btn"
+                            data-query="Show email notifications grouped by email provider with counts">
+                            Count by email provider
+                        </button>
+                        <button class="example-btn"
+                            data-query="Find the total number of notifications by priority level">
+                            Count by priority level
+                        </button>
+                        <button class="example-btn"
+                            data-query="Group SMS notifications by status and show delivery rate">
+                            SMS delivery rate by status
+                        </button>
+                        <button class="example-btn"
+                            data-query="Show me notification events grouped by customer with total count">
+                            Notifications per customer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>Natural Language Query Interface</h2>
+                    <p>Ask questions in plain English about notifications, events, and delivery channels</p>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h3>Welcome to MongoDB Query Assistant</h3>
+                        <p>I can help you query the notification system database using natural language. Just type
+                            your question below!</p>
+                        <div class="welcome-features">
+                            <div class="feature">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <span>AI-powered query generation</span>
+                            </div>
+                            <div class="feature">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <span>Secure - only schemas sent to AI</span>
+                            </div>
+                            <div class="feature">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                <span>Real-time query execution</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea id="user-input" class="chat-input"
+                            placeholder="Ask a question... (e.g., 'Show me all failed email notifications' or 'Count notifications by event type')"
+                            rows="1"></textarea>
+                        <button id="send-btn" class="send-btn" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="input-actions">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="auto-execute" checked>
+                            <span>Auto-execute queries</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

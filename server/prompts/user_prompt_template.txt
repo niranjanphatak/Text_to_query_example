@@ -1,0 +1,13 @@
+AVAILABLE SCHEMAS (Structure Only - No Actual Data):
+{schema_context}
+
+DATE REFERENCES (use these for time-based queries):
+- Current time: {current_time}
+- 7 days ago: {seven_days_ago}
+- 10 days ago: {ten_days_ago}
+- 30 days ago: {thirty_days_ago}
+
+USER REQUEST:
+{user_input}
+
+Generate the MongoDB query now (return ONLY the JSON, no markdown, no explanation):
