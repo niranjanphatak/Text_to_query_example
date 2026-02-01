@@ -11,19 +11,35 @@ class SchemaLoader:
     def __init__(self, schema_directory: str):
         self.schema_directory = schema_directory
         self.schemas = {}
+        self.last_load_time = 0
+        self.schemas_file = os.path.join(self.schema_directory, 'schemas.json')
         self.load_schemas()
     
+    def _should_reload(self) -> bool:
+        """Check if the schema file has been modified since last load"""
+        if not os.path.exists(self.schemas_file):
+            return False
+        
+        mtime = os.path.getmtime(self.schemas_file)
+        return mtime > self.last_load_time
+
     def load_schemas(self):
         """Load all schema files from the schema directory"""
         if not os.path.exists(self.schema_directory):
             print(f"Warning: Schema directory not found: {self.schema_directory}")
             return
         
+        # Track when we started loading
+        if os.path.exists(self.schemas_file):
+            self.last_load_time = os.path.getmtime(self.schemas_file)
+            
+        # Clear existing schemas to prevent stale data
+        self.schemas = {}
+        
         # First, check if schemas.json exists (new format)
-        schemas_file = os.path.join(self.schema_directory, 'schemas.json')
-        if os.path.exists(schemas_file):
+        if os.path.exists(self.schemas_file):
             try:
-                with open(schemas_file, 'r') as f:
+                with open(self.schemas_file, 'r') as f:
                     data = json.load(f)
                     
                     # Check if it's the new multi-collection format
@@ -70,10 +86,14 @@ class SchemaLoader:
     
     def get_schema(self, collection_name: str) -> Dict:
         """Get schema for a specific collection"""
+        if self._should_reload():
+            self.load_schemas()
         return self.schemas.get(collection_name)
     
     def get_all_schemas(self) -> Dict:
         """Get all loaded schemas"""
+        if self._should_reload():
+            self.load_schemas()
         return self.schemas
     
     def get_schema_summary(self, collection_name: str) -> str:
@@ -125,6 +145,9 @@ class SchemaLoader:
         Get summary of all schemas
         This is passed to AI for context - structure only
         """
+        if self._should_reload():
+            self.load_schemas()
+            
         summary = "Available Collections:\n\n"
         
         for collection_name in self.schemas.keys():
@@ -141,4 +164,6 @@ class SchemaLoader:
     
     def get_collection_names(self) -> List[str]:
         """Get list of all collection names"""
+        if self._should_reload():
+            self.load_schemas()
         return list(self.schemas.keys())

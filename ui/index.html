@@ -15,7 +15,7 @@
 <body>
     <div class="app-container">
         <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar collapsed" id="sidebar">
             <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -57,71 +57,7 @@
                     </div>
                 </div>
 
-                <div class="collections-section">
-                    <h3>Available Collections</h3>
-                    <div id="collections-list" class="collections-list">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
 
-                <div class="examples-section">
-                    <h3>Example Queries</h3>
-                    <div class="example-queries">
-                        <button class="example-btn" data-query="Show me all failed email notifications">
-                            Failed email notifications
-                        </button>
-                        <button class="example-btn" data-query="Count notifications by event type">
-                            Count by event type
-                        </button>
-                        <button class="example-btn"
-                            data-query="Show me all transactional notifications from the last 7 days">
-                            Recent transactional notifications
-                        </button>
-                        <button class="example-btn" data-query="Find all read push notifications">
-                            Read push notifications
-                        </button>
-                        <button class="example-btn" data-query="Show me notifications with critical priority">
-                            Critical priority notifications
-                        </button>
-                        <button class="example-btn" data-query="Count how many SMS notifications were delivered">
-                            Delivered SMS count
-                        </button>
-                        <button class="example-btn" data-query="Show email notifications grouped by status">
-                            Email status breakdown
-                        </button>
-                        <button class="example-btn" data-query="Find all notifications for customer John Smith">
-                            Notifications for specific customer
-                        </button>
-                        <button class="example-btn"
-                            data-query="Group notification events by notification type and count them">
-                            Count by notification type
-                        </button>
-                        <button class="example-btn"
-                            data-query="Show me the average retry count for failed email notifications">
-                            Average retry count for failures
-                        </button>
-                        <button class="example-btn"
-                            data-query="Count how many notifications were sent through each channel">
-                            Notifications per channel
-                        </button>
-                        <button class="example-btn"
-                            data-query="Show email notifications grouped by email provider with counts">
-                            Count by email provider
-                        </button>
-                        <button class="example-btn"
-                            data-query="Find the total number of notifications by priority level">
-                            Count by priority level
-                        </button>
-                        <button class="example-btn"
-                            data-query="Group SMS notifications by status and show delivery rate">
-                            SMS delivery rate by status
-                        </button>
-                        <button class="example-btn"
-                            data-query="Show me notification events grouped by customer with total count">
-                            Notifications per customer
-                        </button>
-                    </div>
-                </div>
             </div>
         </aside>
 

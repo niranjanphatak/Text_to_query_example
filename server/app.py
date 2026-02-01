@@ -68,6 +68,23 @@ def convert_dates_in_query(obj):
     else:
         return obj
 
+def bson_to_json(obj):
+    """
+    Recursively convert BSON-specific types (ObjectId, datetime) to JSON-serializable formats.
+    """
+    from bson import ObjectId
+    from datetime import datetime
+    
+    if isinstance(obj, dict):
+        return {k: bson_to_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [bson_to_json(item) for item in obj]
+    elif isinstance(obj, ObjectId):
+        return str(obj)
+    elif isinstance(obj, datetime):
+        return obj.isoformat()
+    return obj
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -116,6 +133,7 @@ def convert_text_to_query():
         })
     
     except Exception as e:
+        print(f"✗ Query generation failed: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -162,12 +180,7 @@ def execute_query():
                 cursor = cursor.sort(sort)
             
             cursor = cursor.limit(limit)
-            results = list(cursor)
-            
-            # Convert ObjectId to string for JSON serialization
-            for doc in results:
-                if '_id' in doc:
-                    doc['_id'] = str(doc['_id'])
+            results = [bson_to_json(doc) for doc in cursor]
             
             return jsonify({
                 'success': True,
@@ -182,12 +195,7 @@ def execute_query():
             
             # No date conversion needed - dates are stored as ISO strings
             
-            results = list(collection.aggregate(pipeline))
-            
-            # Convert ObjectId to string
-            for doc in results:
-                if '_id' in doc:
-                    doc['_id'] = str(doc['_id'])
+            results = [bson_to_json(doc) for doc in list(collection.aggregate(pipeline))]
             
             return jsonify({
                 'success': True,
@@ -214,9 +222,13 @@ def execute_query():
             }), 400
     
     except Exception as e:
+        print(f"✗ Query execution failed: {e}")
+        print(f"  Collection: {collection_name if 'collection_name' in locals() else 'unknown'}")
+        print(f"  Query: {json.dumps(query) if 'query' in locals() else 'unknown'}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'query': query if 'query' in locals() else None
         }), 500
 
 @app.route('/api/collections', methods=['GET'])

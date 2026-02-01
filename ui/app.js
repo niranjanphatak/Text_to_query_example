@@ -13,7 +13,6 @@ const autoExecuteCheckbox = document.getElementById('auto-execute');
 const serverStatus = document.getElementById('server-status');
 const mongoStatus = document.getElementById('mongo-status');
 const schemasStatus = document.getElementById('schemas-status');
-const collectionsList = document.getElementById('collections-list');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeApp() {
     await checkServerHealth();
     await loadSchemas();
-    await loadCollections();
 }
 
 function setupEventListeners() {
@@ -46,28 +44,20 @@ function setupEventListeners() {
         updateSendButton();
     });
 
-    // Example query buttons
-    document.querySelectorAll('.example-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            userInput.value = btn.dataset.query;
-            userInput.focus();
-            updateSendButton();
-        });
-    });
 
     // Sidebar toggle
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebar-toggle');
 
-    // Load sidebar state
-    const sidebarState = localStorage.getItem('sidebar-collapsed');
-    if (sidebarState === 'true') {
-        sidebar.classList.add('collapsed');
+    // Load sidebar state (default to collapsed)
+    const sidebarState = localStorage.getItem('sidebar-collapsed-v2');
+    if (sidebarState === 'false') {
+        sidebar.classList.remove('collapsed');
     }
 
     sidebarToggle.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        localStorage.setItem('sidebar-collapsed-v2', sidebar.classList.contains('collapsed'));
     });
 
     updateSendButton();
@@ -125,33 +115,6 @@ async function loadSchemas() {
     }
 }
 
-async function loadCollections() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/schemas`);
-        const data = await response.json();
-
-        if (data.success && data.schemas) {
-            displayCollections(data.schemas);
-        }
-    } catch (error) {
-        console.error('Failed to load collections:', error);
-        collectionsList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">Failed to load collections</p>';
-    }
-}
-
-function displayCollections(schemas) {
-    collectionsList.innerHTML = '';
-
-    Object.values(schemas).forEach(schema => {
-        const item = document.createElement('div');
-        item.className = 'collection-item';
-        item.innerHTML = `
-            <div class="collection-name">${schema.collection}</div>
-            <div class="collection-desc">${schema.description || 'No description'}</div>
-        `;
-        collectionsList.appendChild(item);
-    });
-}
 
 async function handleSendMessage() {
     const text = userInput.value.trim();
@@ -339,12 +302,56 @@ function addResultsMessage(results) {
             </div>
         `;
     } else if (results.results && results.results.length > 0) {
-        resultsDisplay.innerHTML = `
-            <div class="results-header">
-                <span class="results-count">Found <strong>${results.count}</strong> result(s)</span>
+        const resultsHeader = document.createElement('div');
+        resultsHeader.className = 'results-header';
+        resultsHeader.innerHTML = `
+            <span class="results-count">Found <strong>${results.count}</strong> result(s)</span>
+            <div class="results-view-toggle">
+                <button class="view-toggle-btn active" data-view="table">Table</button>
+                <button class="view-toggle-btn" data-view="json">JSON</button>
             </div>
-            <div class="results-json">${JSON.stringify(results.results, null, 2)}</div>
         `;
+
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'results-table-container view-section';
+        tableContainer.innerHTML = createResultsTable(results.results);
+
+        const jsonContainer = document.createElement('div');
+        jsonContainer.className = 'results-json view-section hidden';
+        jsonContainer.textContent = JSON.stringify(results.results, null, 2);
+
+        resultsDisplay.appendChild(resultsHeader);
+        resultsDisplay.appendChild(tableContainer);
+        resultsDisplay.appendChild(jsonContainer);
+
+        // Setup toggle listeners
+        const buttons = resultsHeader.querySelectorAll('.view-toggle-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const view = btn.dataset.view;
+                if (view === 'table') {
+                    tableContainer.classList.remove('hidden');
+                    jsonContainer.classList.add('hidden');
+                } else {
+                    tableContainer.classList.add('hidden');
+                    jsonContainer.classList.remove('hidden');
+                }
+            });
+        });
+
+        // Decide initial view based on "tabular-ability"
+        const isTabular = results.results.every(item => {
+            return Object.values(item).every(val => typeof val !== 'object' || val === null);
+        });
+
+        if (!isTabular) {
+            // Default to JSON if data is nested
+            buttons[1].click();
+        }
+
     } else {
         resultsDisplay.innerHTML = `
             <div class="results-header">
@@ -360,6 +367,57 @@ function addResultsMessage(results) {
 
     chatMessages.appendChild(messageDiv);
     scrollToBottom();
+}
+
+/**
+ * Helper to create a table from query results
+ */
+function createResultsTable(data) {
+    if (!data || data.length === 0) return '';
+
+    // Extract all unique headers from all rows
+    const headers = [...new Set(data.flatMap(obj => Object.keys(obj)))];
+
+    let html = '<table class="results-table"><thead><tr>';
+    headers.forEach(header => {
+        html += `<th>${header}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    data.forEach(row => {
+        html += '<tr>';
+        headers.forEach(header => {
+            let val = row[header];
+            let displayVal = '';
+            let valClass = '';
+
+            if (val === undefined || val === null) {
+                displayVal = '<span class="null-val">null</span>';
+            } else if (typeof val === 'object') {
+                displayVal = `<span class="obj-val" title='${JSON.stringify(val).replace(/'/g, "&apos;")}'>{ ... }</span>`;
+            } else if (typeof val === 'number') {
+                displayVal = val.toLocaleString();
+                valClass = 'val-number';
+            } else if (typeof val === 'boolean') {
+                displayVal = val ? 'TRUE' : 'FALSE';
+                valClass = 'val-boolean';
+            } else if (typeof val === 'string' && val.includes('T') && !isNaN(Date.parse(val))) {
+                // If it looks like an ISO date
+                const date = new Date(val);
+                displayVal = date.toLocaleString();
+                valClass = 'val-date';
+            } else {
+                displayVal = val.toString();
+                valClass = 'val-string';
+            }
+
+            html += `<td><span class="${valClass}" title="${typeof val === 'string' ? val.replace(/"/g, '&quot;') : ''}">${displayVal}</span></td>`;
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    return html;
 }
 
 function addErrorMessage(errorText) {

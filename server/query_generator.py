@@ -50,7 +50,7 @@ class QueryGenerator:
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.1,
-                max_tokens=2000
+                max_tokens=4000
             )
             
             result = self._parse_ai_response(response.choices[0].message.content)
@@ -115,13 +115,23 @@ Generate the MongoDB query now:"""
         response_text = response_text.strip()
         
         # Remove markdown code blocks if present
-        if response_text.startswith('```'):
-            lines = response_text.split('\n')
-            # Remove first and last lines (```)
-            response_text = '\n'.join(lines[1:-1])
-            # Remove 'json' if it's the first word
-            if response_text.strip().startswith('json'):
-                response_text = response_text.strip()[4:].strip()
+        if '```' in response_text:
+            # Check for ```json ... ``` or just ``` ... ```
+            import re
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(1)
+            else:
+                # Fallback: remove lines starting with ```
+                lines = response_text.split('\n')
+                response_text = '\n'.join([l for l in lines if not l.strip().startswith('```')])
+        
+        # Find the first '{' and last '}' if we haven't already extracted clean JSON
+        if not (response_text.startswith('{') and response_text.endswith('}')):
+            start_index = response_text.find('{')
+            end_index = response_text.rfind('}')
+            if start_index != -1 and end_index != -1 and end_index > start_index:
+                response_text = response_text[start_index:end_index+1]
         
         try:
             result = json.loads(response_text)

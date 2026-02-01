@@ -105,3 +105,28 @@ The system uses a single `server/data/schemas/schemas.json` file that defines al
 ## 📄 License
 
 This project is created for demonstration purposes.
+
+
+## For using LangChain ChatOpenAI 
+1. Update Requirements:
+langchain-openai
+
+2. Update query_generator.py
+
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage, HumanMessage
+
+# Inside __init__
+self.chat = ChatOpenAI(
+    model=self.model_name,
+    openai_api_key=api_key,
+    base_url=base_url
+)
+
+# Inside generate_query
+messages = [
+    SystemMessage(content=system_prompt),
+    HumanMessage(content=user_prompt)
+]
+response = self.chat.invoke(messages)
+result = self._parse_ai_response(response.content)
