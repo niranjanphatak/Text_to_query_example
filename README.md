@@ -43,14 +43,8 @@ This script will:
 - Validate configuration
 - Start both Server (port 5000) and UI (port 8000)
 
-### 3. (Optional) Initialize Sample Data
-If you want to test with sample notification data:
-```bash
-cd server
-source venv/bin/activate
-python init_sample_data.py
-```
-This creates 100 sample notifications across all channels.
+### 3. Usage
+Once the application is started, open your browser to `http://localhost:8000` to interact with the system.
 
 ## 🛠️ Management Scripts
 

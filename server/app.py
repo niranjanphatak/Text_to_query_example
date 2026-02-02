@@ -124,6 +124,11 @@ def convert_text_to_query():
         # Generate MongoDB query using AI (only schemas are passed, not data)
         result = query_generator.generate_query(user_input)
         
+        print(f"DEBUG: Converted '{user_input}' to:")
+        print(f"  Collection: {result['collection']}")
+        print(f"  Type: {result['query_type']}")
+        print(f"  Query: {json.dumps(result['query'])}")
+        
         return jsonify({
             'success': True,
             'query': result['query'],

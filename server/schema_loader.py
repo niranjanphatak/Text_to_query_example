@@ -42,6 +42,9 @@ class SchemaLoader:
                 with open(self.schemas_file, 'r') as f:
                     data = json.load(f)
                     
+                    # Load relationships if present
+                    self.relationships = data.get('relationships', {})
+                    
                     # Check if it's the new multi-collection format
                     if 'collections' in data:
                         print(f"✓ Loading schemas from schemas.json (multi-collection format)")
@@ -58,6 +61,22 @@ class SchemaLoader:
                         return
             except Exception as e:
                 print(f"✗ Error loading schemas.json: {e}")
+
+    def get_relationships_summary(self) -> str:
+        """Get summary of collection relationships"""
+        if not hasattr(self, 'relationships') or not self.relationships:
+            return "No explicit relationships defined between collections."
+        
+        summary = "COLLECTION RELATIONSHIPS:\n"
+        summary += f"Description: {self.relationships.get('description', 'N/A')}\n"
+        
+        examples = self.relationships.get('example_queries', [])
+        if examples:
+            summary += "Example usage (for guidance only):\n"
+            for example in examples:
+                summary += f"  - {example}\n"
+        
+        return summary
         
         # Fallback: Load individual schema files (old format)
         for filename in os.listdir(self.schema_directory):
@@ -159,6 +178,9 @@ class SchemaLoader:
         for collection_name in self.schemas.keys():
             summary += self.get_schema_summary(collection_name)
             summary += "\n" + "=" * 60 + "\n\n"
+        
+        # Add relationships summary at the end
+        summary += self.get_relationships_summary()
         
         return summary
     
