@@ -1,314 +1,377 @@
 {
-    "description": "Multi-collection notification system with primary events and channel-specific collections",
+    "description": "Auto-generated schemas for 1 collection(s)",
     "collections": {
         "notification_events": {
-            "description": "Primary collection tracking all notification events",
+            "description": "Auto-generated schema for notification_events collection",
             "fields": {
+                "_id": {
+                    "type": "objectId",
+                    "description": "Unique document identifier",
+                    "indexed": true,
+                    "unique": true
+                },
                 "event_tracking_id": {
                     "type": "string",
-                    "description": "Unique tracking ID linking all collections",
-                    "example": "EVT-20241128-001234",
-                    "indexed": true
+                    "description": "Event tracking id",
+                    "indexed": true,
+                    "unique": true,
+                    "example": "EVT-20260201-000070"
                 },
                 "event_name": {
                     "type": "string",
-                    "description": "Event name for categorization and analytics",
-                    "example": "ORDER_PLACED, PAYMENT_RECEIVED, ACCOUNT_CREATED, ORDER_SHIPPED, PASSWORD_RESET, SUBSCRIPTION_RENEWED",
-                    "indexed": true
+                    "description": "Event name",
+                    "indexed": true,
+                    "example": "SUBSCRIPTION_RENEWED"
                 },
                 "customer_id": {
                     "type": "string",
-                    "indexed": true
+                    "description": "Customer id",
+                    "indexed": true,
+                    "example": "CUST-00070"
                 },
                 "customer_name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Customer name",
+                    "example": "Chloe Roberts"
                 },
                 "customer_email": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Customer email",
+                    "example": "chloe.roberts@yahoo.com"
                 },
                 "customer_phone": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Customer phone",
+                    "example": "+15116933200"
                 },
                 "notification_type": {
                     "type": "string",
+                    "description": "Notification type",
                     "enum": [
-                        "promotional",
-                        "transactional",
                         "alert",
+                        "promotional",
                         "reminder",
-                        "system"
-                    ]
+                        "system",
+                        "transactional"
+                    ],
+                    "example": "system"
                 },
                 "priority": {
                     "type": "integer",
-                    "description": "1=critical, 2=high, 3=medium, 4=low, 5=lowest"
+                    "description": "Priority",
+                    "example": 2
                 },
                 "subject": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Subject",
+                    "example": "Subscription Renewed - Chloe Roberts"
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Message",
+                    "example": "Your subscription renewed has been processed successfully."
                 },
                 "channels": {
                     "type": "array",
-                    "description": "Channels to send through",
+                    "description": "Channels",
+                    "example": [
+                        "push",
+                        "sms"
+                    ],
                     "items": {
-                        "type": "string",
-                        "enum": [
-                            "email",
-                            "sms",
-                            "push",
-                            "in_app"
-                        ]
+                        "type": "string"
                     }
                 },
                 "status": {
                     "type": "string",
+                    "description": "Status",
                     "enum": [
                         "accepted",
                         "processed"
                     ],
-                    "description": "Event processing status"
+                    "example": "accepted"
                 },
                 "created_at": {
                     "type": "string",
+                    "description": "Created at",
                     "indexed": true
                 },
                 "processed_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Processed at"
                 },
                 "metadata": {
-                    "type": "object"
+                    "type": "object",
+                    "description": "Metadata"
                 }
             }
         },
         "email_notifications": {
-            "description": "Email channel notifications",
+            "description": "Auto-generated schema for email_notifications collection",
             "fields": {
+                "_id": {
+                    "type": "objectId",
+                    "description": "Unique document identifier",
+                    "indexed": true,
+                    "unique": true
+                },
                 "event_tracking_id": {
                     "type": "string",
-                    "description": "Links to notification_events",
-                    "indexed": true
+                    "description": "Event tracking id",
+                    "indexed": true,
+                    "example": "EVT-20260201-000030"
                 },
                 "recipient_email": {
                     "type": "string",
-                    "indexed": true
+                    "description": "Recipient email",
+                    "indexed": true,
+                    "example": "charlotte.garcia@outlook.com"
                 },
                 "recipient_name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Recipient name",
+                    "example": "Charlotte Garcia"
                 },
                 "subject": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Subject",
+                    "example": "Notification for Charlotte Garcia"
                 },
                 "message_body": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Message body",
+                    "example": "This is your notification message."
                 },
                 "html_body": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Html body",
+                    "example": "<html><body><h1>Notification</h1><p>This is your notification message.</p></body></html>"
                 },
                 "status": {
                     "type": "string",
+                    "description": "Status",
+                    "indexed": true,
                     "enum": [
-                        "pending",
-                        "processing",
-                        "sent",
+                        "bounced",
                         "delivered",
                         "failed",
-                        "blacklisted",
-                        "bounced",
-                        "unsubscribed",
-                        "read"
+                        "pending",
+                        "processing",
+                        "read",
+                        "sent"
                     ],
-                    "indexed": true
+                    "example": "read"
                 },
                 "sent_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Sent at"
                 },
                 "delivered_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Delivered at"
                 },
                 "opened_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Opened at"
                 },
                 "clicked_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Clicked at"
                 },
                 "email_provider": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Email provider",
+                    "enum": [
+                        "AWS SES",
+                        "Mailgun",
+                        "Postmark",
+                        "SendGrid",
+                        "SparkPost"
+                    ],
+                    "example": "SparkPost"
                 },
                 "message_id": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Message id",
+                    "example": "MSG-EVT-20260201-000030-EMAIL"
                 },
                 "retry_count": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Retry count"
                 },
                 "error_details": {
-                    "type": "string"
-                }
-            }
-        },
-        "sms_notifications": {
-            "description": "SMS channel notifications",
-            "fields": {
-                "event_tracking_id": {
                     "type": "string",
-                    "indexed": true
-                },
-                "recipient_phone": {
-                    "type": "string",
-                    "indexed": true
-                },
-                "recipient_name": {
-                    "type": "string"
-                },
-                "message_body": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string",
-                    "enum": [
-                        "pending",
-                        "processing",
-                        "sent",
-                        "delivered",
-                        "failed",
-                        "blacklisted"
-                    ],
-                    "indexed": true
-                },
-                "sent_at": {
-                    "type": "string"
-                },
-                "delivered_at": {
-                    "type": "string"
-                },
-                "sms_provider": {
-                    "type": "string"
-                },
-                "message_id": {
-                    "type": "string"
-                },
-                "retry_count": {
-                    "type": "integer"
-                },
-                "error_details": {
-                    "type": "string"
-                }
-            }
-        },
-        "push_notifications": {
-            "description": "Push notification channel",
-            "fields": {
-                "event_tracking_id": {
-                    "type": "string",
-                    "indexed": true
-                },
-                "recipient_id": {
-                    "type": "string",
-                    "indexed": true
-                },
-                "device_tokens": {
-                    "type": "array"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "message_body": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string",
-                    "enum": [
-                        "pending",
-                        "processing",
-                        "sent",
-                        "delivered",
-                        "failed",
-                        "blacklisted",
-                        "read"
-                    ],
-                    "indexed": true
-                },
-                "sent_at": {
-                    "type": "string"
-                },
-                "delivered_at": {
-                    "type": "string"
-                },
-                "received_at": {
-                    "type": "string"
-                },
-                "clicked_at": {
-                    "type": "string"
-                },
-                "push_provider": {
-                    "type": "string"
-                },
-                "notification_id": {
-                    "type": "string"
-                },
-                "retry_count": {
-                    "type": "integer"
-                },
-                "error_details": {
-                    "type": "string"
+                    "description": "Error details",
+                    "example": "SMTP connection failed"
                 }
             }
         },
         "inapp_notifications": {
-            "description": "In-app notification channel",
+            "description": "Auto-generated schema for inapp_notifications collection",
             "fields": {
+                "_id": {
+                    "type": "objectId",
+                    "description": "Unique document identifier",
+                    "indexed": true,
+                    "unique": true
+                },
                 "event_tracking_id": {
                     "type": "string",
-                    "indexed": true
+                    "description": "Event tracking id",
+                    "indexed": true,
+                    "example": "EVT-20260201-000021"
                 },
                 "recipient_id": {
                     "type": "string",
-                    "indexed": true
+                    "description": "Recipient id",
+                    "indexed": true,
+                    "example": "CUST-00021"
                 },
                 "recipient_name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Recipient name",
+                    "example": "Aaron Turner"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Title",
+                    "example": "New Activity"
                 },
                 "message_body": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Message body",
+                    "example": "You have new activity in your account. Tap to view details."
                 },
                 "status": {
                     "type": "string",
+                    "description": "Status",
+                    "indexed": true,
                     "enum": [
-                        "pending",
-                        "sent",
                         "delivered",
+                        "pending",
                         "read",
-                        "failed"
+                        "sent"
                     ],
-                    "indexed": true
+                    "example": "pending"
                 },
                 "sent_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Sent at"
                 },
                 "delivered_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Delivered at"
                 },
                 "read_at": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Read at"
                 },
                 "retry_count": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Retry count"
                 },
                 "error_details": {
-                    "type": "string"
+                    "type": "unknown",
+                    "description": "Error details"
+                }
+            }
+        },
+        "push_notifications": {
+            "description": "Auto-generated schema for push_notifications collection",
+            "fields": {
+                "_id": {
+                    "type": "objectId",
+                    "description": "Unique document identifier",
+                    "indexed": true,
+                    "unique": true
+                },
+                "event_tracking_id": {
+                    "type": "string",
+                    "description": "Event tracking id",
+                    "indexed": true,
+                    "example": "EVT-20260201-000035"
+                },
+                "recipient_id": {
+                    "type": "string",
+                    "description": "Recipient id",
+                    "indexed": true,
+                    "example": "CUST-00035"
+                },
+                "device_tokens": {
+                    "type": "array",
+                    "description": "Device tokens",
+                    "example": [
+                        "TOKEN-3546-7706"
+                    ],
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Title",
+                    "example": "New Notification"
+                },
+                "message_body": {
+                    "type": "string",
+                    "description": "Message body",
+                    "example": "Hi Abigail, you have a new notification!"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Status",
+                    "indexed": true,
+                    "enum": [
+                        "delivered",
+                        "pending",
+                        "processing",
+                        "read",
+                        "sent"
+                    ],
+                    "example": "delivered"
+                },
+                "sent_at": {
+                    "type": "string",
+                    "description": "Sent at"
+                },
+                "delivered_at": {
+                    "type": "string",
+                    "description": "Delivered at"
+                },
+                "received_at": {
+                    "type": "string",
+                    "description": "Received at"
+                },
+                "clicked_at": {
+                    "type": "string",
+                    "description": "Clicked at"
+                },
+                "push_provider": {
+                    "type": "string",
+                    "description": "Push provider",
+                    "enum": [
+                        "AWS SNS",
+                        "Firebase",
+                        "OneSignal",
+                        "Pusher",
+                        "Urban Airship"
+                    ],
+                    "example": "AWS SNS"
+                },
+                "notification_id": {
+                    "type": "string",
+                    "description": "Notification id",
+                    "example": "NOTIF-EVT-20260201-000035-PUSH"
+                },
+                "retry_count": {
+                    "type": "integer",
+                    "description": "Retry count"
+                },
+                "error_details": {
+                    "type": "unknown",
+                    "description": "Error details"
                 }
             }
         }
-    },
-    "relationships": {
-        "description": "Collections are linked via event_tracking_id",
-        "example_queries": [
-            "Get all channels for event: db.email_notifications.find({event_tracking_id: 'EVT-001'})",
-            "Get event status: db.notification_events.findOne({event_tracking_id: 'EVT-001'})"
-        ]
     }
 }

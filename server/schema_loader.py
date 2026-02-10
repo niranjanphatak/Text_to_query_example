@@ -115,6 +115,12 @@ class SchemaLoader:
             self.load_schemas()
         return self.schemas
     
+    def reload_schemas(self):
+        """Force reload schemas from disk"""
+        self.last_load_time = 0
+        self.load_schemas()
+
+    
     def get_schema_summary(self, collection_name: str) -> str:
         """
         Get a human-readable summary of a schema

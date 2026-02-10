@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import json
@@ -6,9 +6,10 @@ from datetime import datetime
 from pymongo import MongoClient
 from query_generator import QueryGenerator
 from schema_loader import SchemaLoader
+from schema_generator import SchemaGenerator
 from config import Config
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../ui', static_url_path='')
 CORS(app)
 
 # Validate configuration on startup
@@ -84,6 +85,11 @@ def bson_to_json(obj):
     elif isinstance(obj, datetime):
         return obj.isoformat()
     return obj
+
+@app.route('/')
+def index():
+    """Serve the UI"""
+    return send_from_directory('../ui', 'index.html')
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -258,6 +264,72 @@ def get_collections():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route('/api/generate-schema', methods=['POST'])
+def generate_schema():
+    """
+    Generate schemas from existing MongoDB collections
+    with automatic relationship detection
+    """
+    try:
+        if db is None:
+            return jsonify({
+                'success': False,
+                'error': 'MongoDB not connected'
+            }), 503
+        
+        data = request.json
+        collection_names = data.get('collections', [])
+        sample_size = data.get('sample_size', 100)
+        detect_relationships = data.get('detect_relationships', True)
+        merge_strategy = data.get('merge_strategy', 'merge')
+        
+        if not collection_names:
+            return jsonify({
+                'success': False,
+                'error': 'No collections specified'
+            }), 400
+        
+        # Validate that collections exist
+        existing_collections = db.list_collection_names()
+        invalid_collections = [c for c in collection_names if c not in existing_collections]
+        
+        if invalid_collections:
+            return jsonify({
+                'success': False,
+                'error': f'Collections not found: {", ".join(invalid_collections)}',
+                'available_collections': existing_collections
+            }), 400
+        
+        # Initialize schema generator
+        schema_file_path = os.path.join('./data/schemas', 'schemas.json')
+        generator = SchemaGenerator(db, schema_file_path)
+        
+        # Generate schemas
+        print(f"Generating schemas for {len(collection_names)} collection(s)...")
+        result = generator.generate_schemas(
+            collection_names,
+            sample_size=sample_size,
+            detect_relationships=detect_relationships,
+            merge_strategy=merge_strategy
+        )
+        
+        # Reload schema loader to pick up new schemas
+        schema_loader.reload_schemas()
+        
+        print(f"✓ Schema generation complete!")
+        
+        return jsonify(result)
+    
+    except Exception as e:
+        print(f"✗ Schema generation failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 
 if __name__ == '__main__':
     print("=" * 60)

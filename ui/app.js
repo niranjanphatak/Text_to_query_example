@@ -60,6 +60,9 @@ function setupEventListeners() {
         localStorage.setItem('sidebar-collapsed-v2', sidebar.classList.contains('collapsed'));
     });
 
+    // Schema generation modal
+    setupSchemaModal();
+
     updateSendButton();
 }
 
@@ -480,3 +483,231 @@ function removeTypingIndicator(id) {
 function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+// ========================================
+// Schema Generation Modal
+// ========================================
+
+let selectedCollections = new Set();
+
+function setupSchemaModal() {
+    const modal = document.getElementById('schema-modal');
+    const openBtn = document.getElementById('generate-schema-btn');
+    const closeBtn = document.getElementById('modal-close-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const generateBtn = document.getElementById('generate-btn');
+    const selectAllBtn = document.getElementById('select-all-collections');
+    const sampleSizeInput = document.getElementById('sample-size');
+    const sampleSizeValue = document.getElementById('sample-size-value');
+
+    // Open modal
+    openBtn.addEventListener('click', async () => {
+        modal.style.display = 'flex';
+        selectedCollections.clear();
+        await loadCollectionsList();
+    });
+
+    // Close modal
+    const closeModal = () => {
+        modal.style.display = 'none';
+        document.getElementById('relationship-preview').style.display = 'none';
+        document.getElementById('relationship-preview').innerHTML = '';
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Sample size slider
+    sampleSizeInput.addEventListener('input', (e) => {
+        sampleSizeValue.textContent = e.target.value;
+    });
+
+    // Select all collections
+    selectAllBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.collection-checkbox');
+        const allSelected = selectedCollections.size === checkboxes.length;
+
+        if (allSelected) {
+            // Deselect all
+            checkboxes.forEach(cb => cb.checked = false);
+            selectedCollections.clear();
+            selectAllBtn.textContent = 'Select All';
+        } else {
+            // Select all
+            checkboxes.forEach(cb => {
+                cb.checked = true;
+                selectedCollections.add(cb.value);
+            });
+            selectAllBtn.textContent = 'Deselect All';
+        }
+
+        updateGenerateButton();
+    });
+
+    // Generate schema
+    generateBtn.addEventListener('click', async () => {
+        await generateSchemas();
+    });
+}
+
+async function loadCollectionsList() {
+    const listContainer = document.getElementById('collection-list');
+    listContainer.innerHTML = '<div class="loading-spinner">Loading collections...</div>';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/collections`);
+        const data = await response.json();
+
+        if (data.success && data.collections.length > 0) {
+            listContainer.innerHTML = '';
+
+            data.collections.forEach(collectionName => {
+                const item = document.createElement('label');
+                item.className = 'collection-item';
+                item.innerHTML = `
+                    <input type="checkbox" class="collection-checkbox" value="${collectionName}">
+                    <span class="collection-name">${collectionName}</span>
+                `;
+
+                const checkbox = item.querySelector('input');
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        selectedCollections.add(collectionName);
+                    } else {
+                        selectedCollections.delete(collectionName);
+                    }
+                    updateGenerateButton();
+                    updateSelectAllButton();
+                });
+
+                listContainer.appendChild(item);
+            });
+        } else {
+            listContainer.innerHTML = '<div class="no-collections">No collections found in database</div>';
+        }
+    } catch (error) {
+        listContainer.innerHTML = `<div class="error-message">Failed to load collections: ${error.message}</div>`;
+    }
+}
+
+function updateGenerateButton() {
+    const generateBtn = document.getElementById('generate-btn');
+    generateBtn.disabled = selectedCollections.size === 0;
+}
+
+function updateSelectAllButton() {
+    const selectAllBtn = document.getElementById('select-all-collections');
+    const checkboxes = document.querySelectorAll('.collection-checkbox');
+    const allSelected = selectedCollections.size === checkboxes.length && checkboxes.length > 0;
+    selectAllBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
+}
+
+async function generateSchemas() {
+    const generateBtn = document.getElementById('generate-btn');
+    const sampleSize = parseInt(document.getElementById('sample-size').value);
+    const detectRelationships = document.getElementById('detect-relationships').checked;
+    const previewSection = document.getElementById('relationship-preview');
+
+    // Disable button and show loading
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<span class="spinner"></span> Generating...';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/generate-schema`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                collections: Array.from(selectedCollections),
+                sample_size: sampleSize,
+                detect_relationships: detectRelationships,
+                merge_strategy: 'merge'
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Show success message
+            displayGenerationResults(result);
+
+            // Refresh schema status
+            await checkServerHealth();
+
+            // Show preview
+            previewSection.style.display = 'block';
+        } else {
+            throw new Error(result.error || 'Schema generation failed');
+        }
+    } catch (error) {
+        alert(`Schema generation failed: ${error.message}`);
+    } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Schema';
+    }
+}
+
+function displayGenerationResults(result) {
+    const previewSection = document.getElementById('relationship-preview');
+
+    let html = '<div class="generation-results">';
+    html += '<h3>✓ Schema Generation Complete</h3>';
+
+    // Stats
+    html += '<div class="stats-grid">';
+    html += `<div class="stat-item">
+        <span class="stat-label">Collections Analyzed</span>
+        <span class="stat-value">${result.stats.collections_analyzed}</span>
+    </div>`;
+    html += `<div class="stat-item">
+        <span class="stat-label">Total Fields</span>
+        <span class="stat-value">${result.stats.total_fields}</span>
+    </div>`;
+    html += `<div class="stat-item">
+        <span class="stat-label">Relationships Found</span>
+        <span class="stat-value">${result.stats.relationships_found}</span>
+    </div>`;
+    html += '</div>';
+
+    // Relationships
+    if (result.relationships && result.relationships.links && result.relationships.links.length > 0) {
+        html += '<div class="relationships-section">';
+        html += '<h4>Detected Relationships</h4>';
+        html += '<div class="relationships-list">';
+
+        result.relationships.links.forEach(link => {
+            html += `<div class="relationship-item">
+                <div class="relationship-arrow">
+                    <span class="from-collection">${link.from}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="to-collection">${link.to}</span>
+                </div>
+                <div class="relationship-details">
+                    <span class="relationship-type">${link.type}</span>
+                    <span class="relationship-field">via ${link.field}</span>
+                    <span class="relationship-confidence">confidence: ${(link.confidence * 100).toFixed(0)}%</span>
+                </div>
+            </div>`;
+        });
+
+        html += '</div></div>';
+    }
+
+    html += '<div class="success-actions">';
+    html += '<button class="primary-btn" onclick="document.getElementById(\'schema-modal\').style.display=\'none\'">Done</button>';
+    html += '</div>';
+    html += '</div>';
+
+    previewSection.innerHTML = html;
+}
+

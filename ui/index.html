@@ -57,6 +57,15 @@
                     </div>
                 </div>
 
+                <div class="schema-management-section">
+                    <h3>Schema Management</h3>
+                    <button id="generate-schema-btn" class="action-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span>Generate Schema</span>
+                    </button>
+                </div>
 
             </div>
         </aside>
@@ -130,6 +139,53 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Schema Generation Modal -->
+    <div id="schema-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Generate Schema from Collections</h2>
+                <button class="modal-close" id="modal-close-btn">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="collection-selector">
+                    <div class="selector-header">
+                        <h3>Select Collections</h3>
+                        <button id="select-all-collections" class="link-btn">Select All</button>
+                    </div>
+                    <div class="collection-list" id="collection-list">
+                        <div class="loading-spinner">Loading collections...</div>
+                    </div>
+                </div>
+
+                <div class="options-section">
+                    <div class="option-group">
+                        <label for="sample-size">
+                            Sample Size: <span id="sample-size-value">100</span> documents
+                        </label>
+                        <input type="range" id="sample-size" min="10" max="1000" value="100" step="10">
+                    </div>
+
+                    <div class="option-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="detect-relationships" checked>
+                            <span>Detect relationships between collections</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="preview-section" id="relationship-preview" style="display: none;">
+                    <!-- Shows detected relationships after generation -->
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="cancel-btn" class="secondary-btn">Cancel</button>
+                <button id="generate-btn" class="primary-btn" disabled>Generate Schema</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
