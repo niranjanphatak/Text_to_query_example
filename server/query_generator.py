@@ -1,7 +1,7 @@
 import os
 import json
 from typing import Dict, Any
-from openai import OpenAI
+from langchain_openai import ChatOpenAI
 from schema_loader import SchemaLoader
 from config import Config
 
@@ -19,13 +19,16 @@ class QueryGenerator:
         base_url = Config.OPENAI_BASE_URL
         self.model_name = Config.OPENAI_MODEL
         
-        # Initialize OpenAI client
-        self.client = OpenAI(
+        # Initialize ChatOpenAI client with custom base URL
+        self.client = ChatOpenAI(
             api_key=api_key,
-            base_url=base_url
+            base_url=base_url,
+            model=self.model_name,
+            temperature=0.1,
+            max_tokens=4000
         )
         
-        print(f"✓ Query Generator initialized with OpenAI")
+        print(f"✓ Query Generator initialized with ChatOpenAI")
         print(f"  - Base URL: {base_url}")
         print(f"  - Model: {self.model_name}")
     
@@ -41,19 +44,18 @@ class QueryGenerator:
         # Create prompt for AI
         system_prompt, user_prompt = self._create_prompt(user_input, schema_context)
         
-        # Generate query using AI
+        # Generate query using AI with LangChain's ChatOpenAI
         try:
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.1,
-                max_tokens=4000
-            )
+            from langchain_core.messages import SystemMessage, HumanMessage
             
-            result = self._parse_ai_response(response.choices[0].message.content)
+            messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_prompt)
+            ]
+            
+            response = self.client.invoke(messages)
+            
+            result = self._parse_ai_response(response.content)
             return result
         except Exception as e:
             raise Exception(f"AI query generation failed: {str(e)}")
