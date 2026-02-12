@@ -61,7 +61,7 @@ class SchemaGenerator:
         # Get indexes
         indexes = self._detect_indexes(collection)
         
-        # Build schema
+        # Build schema (NO EXAMPLES OR DATA - STRUCTURE ONLY)
         fields = {}
         for field_name, analysis in field_analysis.items():
             field_def = {
@@ -75,19 +75,14 @@ class SchemaGenerator:
                 if indexes[field_name].get('unique'):
                     field_def['unique'] = True
             
-            # Add enum values if detected
-            if analysis.get('enum_values'):
-                field_def['enum'] = sorted(list(analysis['enum_values']))
+            # DO NOT add enum values - they contain actual data
+            # DO NOT add example values - they contain actual data
             
-            # Add example value
-            if analysis.get('example'):
-                field_def['example'] = analysis['example']
-            
-            # Handle nested objects
+            # Handle nested objects (structure only, no data)
             if analysis['primary_type'] == 'object' and analysis.get('properties'):
                 field_def['properties'] = analysis['properties']
             
-            # Handle arrays
+            # Handle arrays (type only, no data)
             if analysis['primary_type'] == 'array' and analysis.get('items'):
                 field_def['items'] = analysis['items']
             
@@ -131,17 +126,13 @@ class SchemaGenerator:
             # Determine primary type
             primary_type = stats['types'].most_common(1)[0][0] if stats['types'] else 'unknown'
             
+            # ONLY include type information, NO examples or enum values
             analysis = {
                 'primary_type': primary_type,
-                'presence_rate': stats['present_count'] / total_docs,
-                'example': stats['values'][0] if stats['values'] else None
+                'presence_rate': stats['present_count'] / total_docs
+                # Removed 'example' - contains actual data
+                # Removed 'enum_values' detection - contains actual data
             }
-            
-            # Detect enums (fields with limited distinct values)
-            if primary_type == 'string':
-                unique_values = set(stats['values'])
-                if len(unique_values) <= 10 and len(unique_values) > 1:
-                    analysis['enum_values'] = unique_values
             
             # Handle nested objects
             if primary_type == 'object':
@@ -169,6 +160,7 @@ class SchemaGenerator:
     def _collect_field_stats(self, obj: Any, stats: Dict, prefix: str = ''):
         """
         Recursively collect field statistics from a document
+        NO DATA COLLECTION - only type information
         
         Args:
             obj: Object to analyze (dict, list, or primitive)
@@ -186,12 +178,8 @@ class SchemaGenerator:
                     value_type = self._get_type(value)
                     stats[field_name]['types'][value_type] += 1
                     
-                    # Store sample values (limit to 100)
-                    if len(stats[field_name]['values']) < 100:
-                        if value_type in ['string', 'integer', 'boolean']:
-                            stats[field_name]['values'].append(value)
-                        elif value_type == 'array':
-                            stats[field_name]['values'].append(value)
+                    # DO NOT store sample values - they contain actual data
+                    # We only need type information, not the actual values
     
     def _get_type(self, value: Any) -> str:
         """
